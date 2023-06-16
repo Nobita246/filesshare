@@ -1,0 +1,62 @@
+<link rel="stylesheet" href="/static/css/style.css">
+<div class="container">
+    <h1>Multiple File Upload Viewer</h1>
+</div>
+<div class="container">
+    <form action="">
+        <div>
+            <label for="upload">
+                <input type="file" id="upload" multiple>
+                Upload Files
+            </label>
+        </div>
+        <div class="files">
+            <h2>Files Selected</h2>
+            <ul></ul>
+        </div>
+        <input type="submit" value="Submit" name="submit" id="submit" />
+    </form>
+    <input type="hidden" name="link">
+    <button onclick="myFunction()" class="btn" style="display: none;">Copy text</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="/static/js/script.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        $("form").on("submit", function (e) {
+            e.preventDefault();
+            var formdata = new FormData()
+            for (let i = 0; i <= state.files.length - 1; i++) {
+                console.log(state.files[i]);
+                formdata.append('files', state.files[i])
+            }
+            console.log(formdata)
+            fetch("/home/files/", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': "{{ csrf_token }}"
+                },
+                body: formdata,
+            })
+                .then(response => response.json())
+                .then(json => {
+                    var folder_name = json.data.folder
+                    var base_url = window.location.origin
+                    var downloaded_url = base_url + '/media/zip/' + folder_name + '.zip'
+                    $("input[name=link]").val(downloaded_url)
+                    $(".btn").show()
+                    console.log(downloaded_url)
+                });
+            renderFileList();
+        });
+
+    })
+
+    function myFunction() {
+        var copyText = $("input[name=link]").val()
+        navigator.clipboard.writeText(copyText);
+        alert("Copied the text !");
+    }
+</script>
